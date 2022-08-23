@@ -80,8 +80,8 @@ class SelectMove(abstract_action_space.AbstractActionSpace):
     Returns:
       Scalar cost of taking this action.
     """
-    if action[0] != 0.5:
-        print(action)
+    #if action[0] != 0.5:
+        #print(action)
     noised_action = self.apply_noise_to_action(action)
     position = noised_action[:2]
     motion = self.get_motion(noised_action)
@@ -92,14 +92,15 @@ class SelectMove(abstract_action_space.AbstractActionSpace):
             sprites.append(sprite)
 
     clicked_sprite = self.get_sprite_from_position(position, sprites)
-    if action[0] != 0.5:
-        print(clicked_sprite)
-        print("POS",sprites[0].position)
+    
+    #if action[0] != 0.5:
+    #    print(clicked_sprite)
+    #    print("POS",sprites[0].position)
 
     if clicked_sprite is not None:
-      print("SPEED",clicked_sprite.velocity)
+      #print("SPEED",clicked_sprite.velocity)
       clicked_sprite.velocity += (motion / clicked_sprite.mass)*self._scale #self._action / sprite.mass
-      print("S AFET",clicked_sprite.velocity)
+      #print("S AFET",clicked_sprite.velocity)
     
 
   def reset(self, state):

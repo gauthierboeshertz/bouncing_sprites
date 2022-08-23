@@ -68,7 +68,12 @@ class GymWrapper(object):
             for key, value in self._env.observation_spec().items():
                 components[key] = spaces.Box(
                     -np.inf, np.inf, value.shape, dtype=value.dtype)
-            self._observation_space = spaces.Dict(components)
+
+            if len(self._env.observation_spec().keys()) == 1:
+                self._observation_space = components[list(self._env.observation_spec().keys())[0]]
+            else:
+                self._observation_space = spaces.Dict(components)
+
         return self._observation_space
 
     @property
@@ -87,6 +92,9 @@ class GymWrapper(object):
             if k == 'image':
                 self._last_render = obs[k]
 
+        if len(obs.keys()) == 1:
+            return obs[list(obs.keys())[0]]
+            
         return obs
 
     def step(self, action):
@@ -104,6 +112,7 @@ class GymWrapper(object):
             info: dict with extra information (e.g. discount factor).
         """
         time_step = self._env.step(action)
+
         obs = self._process_obs(time_step.observation)
         reward = time_step.reward or 0
         done = time_step.last()
@@ -135,4 +144,3 @@ class GymWrapper(object):
 
     def close(self):
         """Unused."""
-§

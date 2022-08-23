@@ -47,6 +47,7 @@ flags.DEFINE_integer('fps', 100,
 flags.DEFINE_integer('reward_history', 30,
                      'Number of historical reward timesteps to plot.')
 
+flags.DEFINE_boolean('sparse_reward', True, 'use sparse reward which are only one if the sprite touches the goal.')
 # Flags for gif writing
 flags.DEFINE_boolean('write_gif', False, 'Whether to write a gif.')
 flags.DEFINE_string('gif_file',

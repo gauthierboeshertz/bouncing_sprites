@@ -80,7 +80,6 @@ class PILRenderer(abstract_observer.AbstractObserver):
 
         if bg_color is None:
             bg_color = (255, 255, 255)
-        print("bg color",bg_color)
         self._canvas_bg = Image.new('RGB', self._canvas_size, bg_color)
 
         self._canvas = Image.new('RGB', self._canvas_size)

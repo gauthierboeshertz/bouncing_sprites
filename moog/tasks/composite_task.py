@@ -13,7 +13,7 @@ class CompositeTask(abstract_task.AbstractTask):
     by the predators.
     """
 
-    def __init__(self, *tasks, timeout_steps=np.inf):
+    def __init__(self, *tasks, timeout_steps=np.inf,all_reset=True):
         """Constructor.
 
         Args:
@@ -24,19 +24,21 @@ class CompositeTask(abstract_task.AbstractTask):
         """
         self._tasks = tasks
         self._timeout_steps = timeout_steps
+        self._reseted_tasks = [False for _ in self._tasks]
 
     def reset(self, state, meta_state):
         for task in self._tasks:
             task.reset(state, meta_state)
+        self._reseted_tasks = [False for _ in self._tasks]
 
     def reward(self, state, meta_state, step_count):
         """Compute reward."""
         reward = 0
-        should_reset = step_count >= self._timeout_steps
-        for task in self._tasks:
+        timed_out = step_count >= self._timeout_steps
+        for task_idx, task in enumerate(self._tasks):
             task_reward, task_should_reset = task.reward(
                 state, meta_state, step_count)
             reward += task_reward
-            should_reset = should_reset or task_should_reset
+            self._reseted_tasks[task_idx] = task_should_reset  or  self._reseted_tasks[task_idx]
         
-        return reward, should_reset
+        return reward, all(self._reseted_tasks) or timed_out

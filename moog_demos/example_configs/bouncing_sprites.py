@@ -20,7 +20,8 @@ from moog.state_initialization import sprite_generators
 
 
 color_list = [[0,0,255],[255,0,0],[128,0,0],[255,255,0],[128,0,128]]
-def get_config(num_sprites):
+target_positions = [[0.25,0.25],[0.75,0.25],[0.25,0.75],[0.75,0.75]]
+def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True):
     """Get environment config."""
 
     print("Using bouncing ball environment with {} sprites".format(num_sprites))
@@ -44,12 +45,15 @@ def get_config(num_sprites):
             agents_factors = distribs.Product(
                 [distribs.Continuous('x', 0.1, 0.9),
                 distribs.Continuous('y', 0.1, 0.9)],
+                #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
+                #distribs.Discrete('y', [target_positions[i][1]-0.1])],
+
                 shape='circle', scale=0.1, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
             )
             target_factors = distribs.Product(
-                [distribs.Continuous('x', 0.1, 0.9),
-                distribs.Continuous('y', 0.1, 0.9)],
-                shape='square', scale=0.1, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
+                [distribs.Discrete('x', [target_positions[i][0]]),
+                distribs.Discrete('y', [target_positions[i][1]])],
+                shape='circle', scale=0.05, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
             )
             agents_generator = sprite_generators.generate_sprites(
                 agents_factors, num_sprites=1)
@@ -64,7 +68,7 @@ def get_config(num_sprites):
                 agents_overlap = agent
             else:
                 target = target_generator(
-                    disjoint=True, without_overlapping= walls +  (targets_overlap )+ agents_overlap)
+                    disjoint=True, without_overlapping= walls +  targets_overlap + agents_overlap)
                 agent = agents_generator(without_overlapping=  walls +  targets_overlap + agents_overlap)
                 targets_overlap = targets_overlap + target
                 agents_overlap = agents_overlap + agent
@@ -109,29 +113,37 @@ def get_config(num_sprites):
     ############################################################################
     # Task
     ############################################################################
-
     contact_tasks = []
-    for i in range(num_sprites):
-        contact_tasks.append(tasks.OneContactReward(
-            1/num_sprites, layers_0='agent'+str(i), layers_1='target'+str(i)))
+    if sparse_rewards:
+        for i in range(num_sprites):
+            contact_tasks.append(tasks.OneContactReward(1/num_sprites,
+            layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0))
 
-    task = tasks.CompositeTask(*contact_tasks, timeout_steps=100000)
+    else:
+        for i in range(num_sprites):
+            contact_tasks.append(tasks.FindGoal(
+            layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0))
+
+    task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps)
 
     ############################################################################
     # Action space
     ############################################################################
 
     action_space = action_spaces.SelectMove(
-         action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.005)
+         action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.05)
 
     ############################################################################
     # Observer
     ############################################################################
 
-    observer_image = observers.PILRenderer(
-        image_size=(64, 64), anti_aliasing=1, color_to_rgb=None,bg_color=(255,255,255))
-
     observer_info = observers.SpriteInfo(sprite_layers=tuple(['agent'+str(i) for i in range(num_sprites)]))
+
+    observer_dict = {"sprite_info":observer_info}
+    if is_demo:
+        observer_image = observers.PILRenderer(
+            image_size=(64, 64), anti_aliasing=1, color_to_rgb=None,bg_color=(255,255,255))
+        observer_dict['image'] = observer_image
 
     ############################################################################
     # Final config
@@ -142,6 +154,6 @@ def get_config(num_sprites):
         'physics': physics,
         'task': task,
         'action_space': action_space,
-        'observers': {'image': observer_image, "sprite_info":observer_info},
+        'observers': observer_dict,
     }
     return config

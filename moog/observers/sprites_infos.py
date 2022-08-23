@@ -75,7 +75,7 @@ class SpriteInfo(abstract_observer.AbstractObserver):
             for sprite in state[sprite_layer]:
                 obs[sprite_layer_idx] = [sprite.x,sprite.y, sprite.x_vel,sprite.y_vel]
 
-        return obs
+        return obs.flatten()
 
 
 

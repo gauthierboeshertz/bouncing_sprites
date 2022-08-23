@@ -5,7 +5,7 @@ import inspect
 import numpy as np
 
 
-class OneContactReward(abstract_task.AbstractTask):
+class FindGoal(abstract_task.AbstractTask):
     """ContactReward task.
     
     In this task if any sprite in layers_0 contacts any sprite in layers_1, a
@@ -17,11 +17,12 @@ class OneContactReward(abstract_task.AbstractTask):
     """
 
     def __init__(self,
-                 reward_fn,
                  layers_0,
                  layers_1,
                  condition=None,
-                 reset_steps_after_contact=np.inf):
+                 reset_steps_after_contact=np.inf,
+                 terminate_distance=0.05,
+                 raw_reward_multiplier=5):
         """Constructor.
 
         Args:
@@ -42,10 +43,6 @@ class OneContactReward(abstract_task.AbstractTask):
                 reset the environment. Defaults to infinity, i.e. never
                 resetting.
         """
-        if not callable(reward_fn):
-            self._reward_fn = lambda sprite_0, sprite_1: reward_fn
-        else:
-            self._reward_fn = reward_fn
         
         if not isinstance(layers_0, (list, tuple)):
             layers_0 = [layers_0]
@@ -62,13 +59,21 @@ class OneContactReward(abstract_task.AbstractTask):
         else:
             self._condition = condition
 
-        self._has_made_contact = False
+        self.has_made_contact = False
 
         self._reset_steps_after_contact = reset_steps_after_contact
+        self._terminate_distance = terminate_distance
+        self._raw_reward_multiplier = raw_reward_multiplier
 
     def reset(self, state, meta_state):
         self._steps_until_reset = np.inf
-        self._has_made_contact = False
+
+
+    def _single_sprite_reward(self, sprite,goal_position):
+        goal_distance = np.sum( 
+                              (sprite.position - goal_position)**2.)**0.5
+        raw_reward = self._terminate_distance - goal_distance
+        return self._raw_reward_multiplier * raw_reward
 
     def reward(self, state, meta_state, step_count):
         """Compute reward.
@@ -89,18 +94,14 @@ class OneContactReward(abstract_task.AbstractTask):
         reward = 0
         sprites_0 = [s for k in self._layers_0 for s in state[k]]
         sprites_1 = [s for k in self._layers_1 for s in state[k]]
-        for s_0 in sprites_0:
-            for s_1 in sprites_1:
-                if not self._condition(s_0, s_1, meta_state):
-                    continue
-                if s_0.overlaps_sprite(s_1):
-                    reward = self._reward_fn(s_0, s_1)
-                    if self._steps_until_reset == np.inf:
-                        self._steps_until_reset = (
-                            self._reset_steps_after_contact)
+        if sprites_0[0].overlaps_sprite(sprites_1[0]):
+            if self._steps_until_reset == np.inf:
+                self._steps_until_reset = (
+                    self._reset_steps_after_contact)
 
+        reward = self._single_sprite_reward(sprites_0[0],sprites_1[0].position)
         self._steps_until_reset -= 1
         should_reset = self._steps_until_reset < 0
-        reward = reward if not self._has_made_contact else 0
-        self._has_made_contact = reward > 0 or self._has_made_contact
+        #reward = reward if not self.has_made_contact else 0
+        self.has_made_contact = reward > 0 or self.has_made_contact
         return reward, should_reset
