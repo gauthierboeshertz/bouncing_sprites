@@ -18,9 +18,10 @@ from moog import shapes
 from moog.state_initialization import distributions as distribs
 from moog.state_initialization import sprite_generators
 
-
+RAW_REWARD_MULTIPLIER = 5
+TERMINATE_DISTANCE = 0.05
 color_list = [[0,0,255],[255,0,0],[128,0,0],[255,255,0],[128,0,128]]
-target_positions = [[0.25,0.25],[0.75,0.25],[0.25,0.75],[0.75,0.75]]
+TARGET_POSITIONS = [[0.25,0.25],[0.75,0.25],[0.25,0.75],[0.75,0.75]]
 def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True):
     """Get environment config."""
 
@@ -51,8 +52,8 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True):
                 shape='circle', scale=0.1, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
             )
             target_factors = distribs.Product(
-                [distribs.Discrete('x', [target_positions[i][0]]),
-                distribs.Discrete('y', [target_positions[i][1]])],
+                [distribs.Discrete('x', [TARGET_POSITIONS[i][0]]),
+                distribs.Discrete('y', [TARGET_POSITIONS[i][1]])],
                 shape='circle', scale=0.05, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
             )
             agents_generator = sprite_generators.generate_sprites(
@@ -122,7 +123,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True):
     else:
         for i in range(num_sprites):
             contact_tasks.append(tasks.FindGoal(
-            layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0))
+            layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0,raw_reward_multiplier = 5,terminate_distance=TERMINATE_DISTANCE))
 
     task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps)
 

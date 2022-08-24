@@ -10,10 +10,10 @@ step and pop many times to estimate the distribution of possibilities.
 """
 
 import copy
-from moog import env_wrappers
+from .gym_wrapper import GymWrapper
+from .gym_utils import *
 
-
-class MBRLWrapper(env_wrappers.AbstractEnvironmentWrapper):
+class MBRLWrapper(GymWrapper):
     """Environment class supporting mental simulation.
     
     This wrapper supports the normal environment interface, but adds two
@@ -41,11 +41,17 @@ class MBRLWrapper(env_wrappers.AbstractEnvironmentWrapper):
         """
         super(MBRLWrapper, self).__init__(environment)
         self.is_simulation = False
+        self.reward_range = (-float("inf"), float("inf"))
+        self.spec = None
 
     def reset(self):
         self.stack = []
         self.is_simulation = False
         return super(MBRLWrapper, self).reset()
+
+    def seed(self,seed=None):
+        self.np_random, seed = np_random(seed)
+        return [seed]
 
     def step(self, action):
         """Step the environment with an action."""
