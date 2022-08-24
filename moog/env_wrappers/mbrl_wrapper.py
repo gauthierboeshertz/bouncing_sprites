@@ -41,17 +41,12 @@ class MBRLWrapper(GymWrapper):
         """
         super(MBRLWrapper, self).__init__(environment)
         self.is_simulation = False
-        self.reward_range = (-float("inf"), float("inf"))
-        self.spec = None
 
     def reset(self):
         self.stack = []
         self.is_simulation = False
         return super(MBRLWrapper, self).reset()
 
-    def seed(self,seed=None):
-        self.np_random, seed = np_random(seed)
-        return [seed]
 
     def step(self, action):
         """Step the environment with an action."""

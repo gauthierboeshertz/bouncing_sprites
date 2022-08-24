@@ -22,7 +22,7 @@ one (intentionally) changes the API of the environment.
 from dm_env import specs
 from gym import spaces
 import numpy as np
-
+import gym  
 
 def _spec_to_space(spec):
     """Convert dm_env.specs to gym.Spaces."""
@@ -43,7 +43,7 @@ def _spec_to_space(spec):
         raise ValueError('Unknown type for specs: {}'.format(spec))
 
 
-class GymWrapper(object):
+class GymWrapper(gym.Env):
     """Wraps a object-oriented game environment into a Gym interface.
 
     Observations will be a dictionary, with the same keys as the 'observers'
@@ -60,6 +60,8 @@ class GymWrapper(object):
 
         # Reset object-oriented to setup the observation_specs correctly
         self._env.reset()
+        self.reward_range = (-float("inf"), float("inf"))
+        self.spec = None
 
     @property
     def observation_space(self):
@@ -67,7 +69,7 @@ class GymWrapper(object):
             components = {}
             for key, value in self._env.observation_spec().items():
                 components[key] = spaces.Box(
-                    -np.inf, np.inf, value.shape, dtype=value.dtype)
+                    0, 1, value.shape, dtype=value.dtype)
 
             if len(self._env.observation_spec().keys()) == 1:
                 self._observation_space = components[list(self._env.observation_spec().keys())[0]]
@@ -96,6 +98,10 @@ class GymWrapper(object):
             return obs[list(obs.keys())[0]]
             
         return obs
+
+    def seed(self,seed=None):
+        self.np_random, seed = np_random(seed)
+        return [seed]
 
     def step(self, action):
         """Main step function for the environment.

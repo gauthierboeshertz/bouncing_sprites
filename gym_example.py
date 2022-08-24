@@ -14,6 +14,7 @@ from moog_demos.example_configs import bouncing_sprites
 from stable_baselines3 import TD3
 from stable_baselines3 import PPO
 from stable_baselines3 import SAC
+from stable_baselines3.common.env_checker import check_env
 
 def main(config):
     """Run interactive task demo."""
@@ -23,9 +24,16 @@ def main(config):
     env = environment.Environment(**env_config)
 
     gym_env = gym_wrapper.GymWrapper(env)
-
+    
+    check_env(gym_env)
     model = TD3("MlpPolicy", gym_env, verbose=1,learning_rate=0.0001)
-    model.learn(total_timesteps=1000000)
+    model.learn(total_timesteps=10000)
+
+    obs = gym_env.reset()
+    for i in range(50):
+        action, _states = model.predict(obs, deterministic=True)
+        obs, rewards, dones, info = gym_env.step(action)
+        gym_env.render()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
