@@ -27,7 +27,13 @@ def main(config):
     
     check_env(gym_env)
     model = TD3("MlpPolicy", gym_env, verbose=1,learning_rate=0.0001)
-    model.learn(total_timesteps=10000)
+    model.learn(total_timesteps=10)
+
+    env_config = bouncing_sprites.get_config(num_sprites=config["num_sprites"],is_demo=True,timeout_steps=50,sparse_rewards=config["sparse_rewards"])
+
+    env = environment.Environment(**env_config)
+
+    gym_env = gym_wrapper.GymWrapper(env)
 
     obs = gym_env.reset()
     for i in range(50):
