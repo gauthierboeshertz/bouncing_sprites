@@ -99,7 +99,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True):
     symmetric_collision = physics_lib.Collision(
         elasticity=1., symmetric=True, update_angle_vel=True)
     agent_wall_collision = physics_lib.Collision(
-        elasticity=0., symmetric=False, update_angle_vel=False)
+        elasticity=1., symmetric=True, update_angle_vel=True)
     
     forces = []
     for i in range(num_sprites):
