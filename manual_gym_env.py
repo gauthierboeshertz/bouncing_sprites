@@ -19,6 +19,7 @@ def unroll_env(env):
         action = np.array([state[0],state[1], target_positions[0][0] , target_positions[0][1]  ])
         new_state, reward, done, info = env.step(action)
         print(state, reward)
+        print(env._env._state)
         total_reward += reward
         state = new_state
 
