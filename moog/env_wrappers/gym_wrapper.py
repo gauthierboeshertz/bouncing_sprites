@@ -23,6 +23,8 @@ from dm_env import specs
 from gym import spaces
 import numpy as np
 import gym  
+from .gym_utils import *
+from array2gif import write_gif
 
 def _spec_to_space(spec):
     """Convert dm_env.specs to gym.Spaces."""
@@ -63,6 +65,8 @@ class GymWrapper(gym.Env):
         self.reward_range = (-float("inf"), float("inf"))
         self.spec = None
 
+        self._rendered_frames = []
+
     @property
     def observation_space(self):
         if self._observation_space is None:
@@ -94,7 +98,7 @@ class GymWrapper(gym.Env):
             if k == 'image':
                 self._last_render = obs[k]
 
-        if len(obs.keys()) == 1:
+        if len(obs.keys()) == 1 or (len(obs.keys()) == 2 and "image" in obs.keys()) :
             return obs[list(obs.keys())[0]]
             
         return obs
@@ -133,6 +137,7 @@ class GymWrapper(gym.Env):
                 configuration provided as parameters to object-oriented games.
         """
         time_step = self._env.reset()
+        self._rendered_frames = []
         return self._process_obs(time_step.observation)
 
     def render(self, mode='rgb_array'):
@@ -146,7 +151,11 @@ class GymWrapper(gym.Env):
                 'image').
         """
         del mode
+        self._rendered_frames.append(self._last_render)
         return self._last_render
 
     def close(self):
         """Unused."""
+    
+    def save_episode_gif(self,gif_name):
+        write_gif([np.transpose(f, axes=[2,0, 1]) for f in self._rendered_frames], gif_name, fps=30)

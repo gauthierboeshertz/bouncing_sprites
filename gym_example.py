@@ -27,7 +27,7 @@ def main(config):
     
     check_env(gym_env)
     model = TD3("MlpPolicy", gym_env, verbose=1,learning_rate=0.0001)
-    model.learn(total_timesteps=10)
+    model.learn(total_timesteps=100000)
 
     env_config = bouncing_sprites.get_config(num_sprites=config["num_sprites"],is_demo=True,timeout_steps=50,sparse_rewards=config["sparse_rewards"])
 
@@ -39,8 +39,11 @@ def main(config):
     for i in range(50):
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, dones, info = gym_env.step(action)
+        
         gym_env.render()
-
+        if dones :
+            break
+    gym_env.save_episode_gif("test_bounces.gif")
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_sprites', type=int, default=1)
