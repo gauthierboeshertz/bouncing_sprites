@@ -59,7 +59,7 @@ class FindGoal(abstract_task.AbstractTask):
         else:
             self._condition = condition
 
-        self.has_made_contact = False
+        self._has_made_contact = False
 
         self._reset_steps_after_contact = reset_steps_after_contact
         self._terminate_distance = terminate_distance
@@ -67,7 +67,10 @@ class FindGoal(abstract_task.AbstractTask):
 
     def reset(self, state, meta_state):
         self._steps_until_reset = np.inf
+        self._has_made_contact = False
 
+    def has_finished(self):
+        return self._has_made_contact
 
     def _single_sprite_reward(self, sprite,goal_position):
         goal_distance = np.sum( 
@@ -91,17 +94,22 @@ class FindGoal(abstract_task.AbstractTask):
             reward: Scalar reward.
             should_reset: Bool. Whether to reset task.
         """
+        
         reward = 0
         sprites_0 = [s for k in self._layers_0 for s in state[k]]
         sprites_1 = [s for k in self._layers_1 for s in state[k]]
+
+        reward = self._single_sprite_reward(sprites_0[0],sprites_1[0].position)
+
         if sprites_0[0].overlaps_sprite(sprites_1[0]):
+            self._has_made_contact =  True
             if self._steps_until_reset == np.inf:
                 self._steps_until_reset = (
                     self._reset_steps_after_contact)
-
-        reward = self._single_sprite_reward(sprites_0[0],sprites_1[0].position)
+        
         self._steps_until_reset -= 1
+        
         should_reset = self._steps_until_reset < 0
+
         #reward = reward if not self.has_made_contact else 0
-        self.has_made_contact = reward > 0 or self.has_made_contact
         return reward, should_reset

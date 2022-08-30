@@ -22,7 +22,9 @@ RAW_REWARD_MULTIPLIER = 5
 TERMINATE_DISTANCE = 0.05
 color_list = [[0,0,255],[255,0,0],[128,0,0],[255,255,0],[128,0,128]]
 TARGET_POSITIONS = [[0.25,0.25],[0.75,0.25],[0.25,0.75],[0.75,0.75]]
-def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True):
+SPRITES_POSITIONS = [[0.8,0.5],[0.4,0.8],[0.5,0.5],[0.2,0.2]]
+
+def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False):
     """Get environment config."""
 
     print("Using bouncing ball environment with {} sprites".format(num_sprites))
@@ -42,39 +44,59 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True):
         agents = []
         targets_overlap = None
         agents_overlap = None
-        for i in range(num_sprites):
-            agents_factors = distribs.Product(
-                [distribs.Continuous('x', 0.1, 0.9),
-                distribs.Continuous('y', 0.1, 0.9)],
-                #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
-                #distribs.Discrete('y', [target_positions[i][1]-0.1])],
 
-                shape='circle', scale=0.1, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
-            )
+        ## First create targets so other sprites cant go on them
+        for i in range(num_sprites):
             target_factors = distribs.Product(
                 [distribs.Discrete('x', [TARGET_POSITIONS[i][0]]),
                 distribs.Discrete('y', [TARGET_POSITIONS[i][1]])],
                 shape='circle', scale=0.05, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
             )
-            agents_generator = sprite_generators.generate_sprites(
-                agents_factors, num_sprites=1)
 
             target_generator= sprite_generators.generate_sprites(
                 target_factors, num_sprites=1) 
 
             if targets_overlap is None:
                 target = target_generator(without_overlapping= walls  )
-                agent = agents_generator(without_overlapping=  walls )
                 targets_overlap = target
-                agents_overlap = agent
             else:
                 target = target_generator(
-                    disjoint=True, without_overlapping= walls +  targets_overlap + agents_overlap)
-                agent = agents_generator(without_overlapping=  walls +  targets_overlap + agents_overlap)
+                    disjoint=True, without_overlapping= walls +  targets_overlap )
                 targets_overlap = targets_overlap + target
-                agents_overlap = agents_overlap + agent
 
             targets.append(target)#+ sum(targets) + sum(agents) ))
+
+        for i in range(num_sprites):
+            if random_init_places:
+                agents_factors = distribs.Product(
+                        [distribs.Continuous('x', 0.1, 0.9),
+                        distribs.Continuous('y', 0.1, 0.9)],
+                        #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
+                        #distribs.Discrete('y', [target_positions[i][1]-0.1])],
+
+                        shape='circle', scale=0.08, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
+                    )
+            else:
+                agents_factors = distribs.Product(
+                        [distribs.Discrete('x', [SPRITES_POSITIONS[i][0]]),
+                            distribs.Discrete('y', [SPRITES_POSITIONS[i][1]])],
+                        #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
+                        #distribs.Discrete('y', [target_positions[i][1]-0.1])],
+
+                        shape='circle', scale=0.08, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
+                    )
+
+            agents_generator = sprite_generators.generate_sprites(
+                agents_factors, num_sprites=1)
+
+
+            if agents_overlap is None:
+                agent = agents_generator(without_overlapping=  walls + targets_overlap)
+                agents_overlap = agent
+            else:
+                agent = agents_generator(without_overlapping=  walls +  targets_overlap + agents_overlap)
+                agents_overlap = agents_overlap + agent
+
             agents.append(agent)
 
         state_list = [
@@ -94,8 +116,6 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True):
     ############################################################################
 
     #agent_friction_force = physics_lib.Drag(coeff_friction=0.25)
-    asymmetric_collision = physics_lib.Collision(
-        elasticity=1., symmetric=False, update_angle_vel=True)
     symmetric_collision = physics_lib.Collision(
         elasticity=1., symmetric=True, update_angle_vel=True)
     agent_wall_collision = physics_lib.Collision(
@@ -131,8 +151,15 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True):
     # Action space
     ############################################################################
 
-    action_space = action_spaces.SelectMove(
-         action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.05)
+    if  one_sprite_mover:
+        action_space = action_spaces.MoveOneSprite(    
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.01)
+    elif all_sprite_mover:
+        action_space = action_spaces.MoveAllSprites(    
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01)
+    else:
+        action_space = action_spaces.SelectMove(    
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01)
 
     ############################################################################
     # Observer

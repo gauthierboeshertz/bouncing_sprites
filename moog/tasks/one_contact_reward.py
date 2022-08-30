@@ -70,6 +70,9 @@ class OneContactReward(abstract_task.AbstractTask):
         self._steps_until_reset = np.inf
         self._has_made_contact = False
 
+    def has_finished(self):
+        return self._has_made_contact
+        
     def reward(self, state, meta_state, step_count):
         """Compute reward.
         

@@ -183,11 +183,18 @@ class HumanAgent():
                 canvas_half_width=canvas_half_width,
             )
 
+        elif isinstance(action_space, ( action_spaces.MoveOneSprite)):
+            logging.info('SelectMove action space, Click on sprite and move and release to direct.')
+            self.gui_frame = gui_frames.MoveOneSpriteFrame(
+                self._env_canvas,
+                canvas_half_width=canvas_half_width,
+            )
+
         elif not isinstance(action_space, action_spaces.Composite):
             raise ValueError(
                 'Cannot demo action space {}'.format(env.action_space))
 
-        if not isinstance(action_space, (action_spaces.SetPosition, action_spaces.SelectMove)):
+        if not isinstance(action_space, (action_spaces.SetPosition, action_spaces.SelectMove,action_spaces.MoveOneSprite)):
             self.gui_frame.canvas.pack(side=tk.BOTTOM)
 
         ########################################################################

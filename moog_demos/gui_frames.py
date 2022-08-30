@@ -329,6 +329,66 @@ class SelectMoveFrame():
         else:
             return np.array([0.5, 0.5,0.5, 0.5])
 
+
+class MoveOneSpriteFrame():
+    """SetPosition Tkinter frame.
+
+    This creates position_setting functionality for a canvas. Typically this is
+    done to the HumanAgent._env_canvas.
+    """
+    def __init__(self, canvas, canvas_half_width):
+        """Constructor.
+
+        Args:
+            canvas: Canvas object to add position-setting functionality to.
+            canvas_half_width: Int. Half-width of the canvas.
+        """
+        # Add bindings for clicking, dragging and releasing the joystick
+
+        canvas.bind('<ButtonPress-1>', self._mouse_press)
+        canvas.bind('<ButtonRelease-1>', self._mouse_release)
+
+        self._canvas_half_width = canvas_half_width
+        self._mouse_is_pressed = False
+        self.mouse_released = False
+        self._mouse_coords_press = np.array([0.5, 0.5])
+        self._mouse_coords_release = np.array([0.5, 0.5])
+
+    def _mouse_press(self, event):
+        print("MOUSE PRESSED")
+        self._mouse_is_pressed = True
+        self.mouse_released = False
+
+    def _mouse_release(self, event):
+        self._place_mouse(event,press=False)
+        self.mouse_released = True
+
+    def _place_mouse(self, event,press= True):
+        """Place the self._mouse_coords (x, y) coordinates of a mouse event."""
+        centered_event_coords = (
+            np.array([event.x, event.y], dtype=float) - self._canvas_half_width)
+        centered_event_coords = np.clip(
+            centered_event_coords,
+            -self._canvas_half_width,
+            self._canvas_half_width,
+        )
+        if press:
+            self._mouse_coords_press = 0.5 * (
+                1 + centered_event_coords.astype(float) / self._canvas_half_width)
+        else:
+            self._mouse_coords_release = 0.5 * (
+                1 + centered_event_coords.astype(float) / self._canvas_half_width)
+
+    @property
+    def action(self):
+        """Return the mouse's position as an action in [0, 1] x [0, 1]."""
+        if self._mouse_is_pressed and self.mouse_released:
+            self._mouse_is_pressed = False
+            self.mouse_released = False
+            return np.array([ self._mouse_coords_release[0], 1. - self._mouse_coords_release[1]])
+        else:
+            return np.array([-10000, -10000])
+
 class TwoPlayerGridActions(tk.Frame):
     """2-player grid actions Tkinter frame.
 
