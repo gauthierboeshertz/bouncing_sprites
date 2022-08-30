@@ -42,7 +42,7 @@ def main(config):
     eval_callback = EvalCallback(gym_env, callback_on_new_best=callback_on_best, verbose=1)
 
 
-    tensorboard_folder = "./logs/{}_{}_{}_{}".format(config["algo"],"sparse_rewards" if config["sparse_rewards"] else "", "one_sprite_mover" if config["one_sprite_mover"] else "all_sprite_mover" if config["one_sprite_mover"] else "select_move", "random_init" if config["random_init_places"] else "fixed_init")
+    tensorboard_folder = "./logs/{}_{}sprites_{}_{}_{}".format(config["algo"],str(config["num_sprites"]),"sparse_rewards" if config["sparse_rewards"] else "", "one_sprite_mover" if config["one_sprite_mover"] else "all_sprite_mover" if config["one_sprite_mover"] else "select_move", "random_init" if config["random_init_places"] else "fixed_init")
 
     new_logger = configure(tensorboard_folder+"_log", ["stdout", "csv", "tensorboard"])
 
