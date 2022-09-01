@@ -66,6 +66,7 @@ def main(_):
     print(FLAGS.one_sprite_mover)
     config = get_config(num_sprites=FLAGS.num_sprites,is_demo=True,random_init_places=FLAGS.random_init_places,one_sprite_mover=FLAGS.one_sprite_mover)
 
+    print(config)
     config['observers']['image'] = observers.PILRenderer(
         image_size=(FLAGS.render_size, FLAGS.render_size),
         anti_aliasing=FLAGS.anti_aliasing,

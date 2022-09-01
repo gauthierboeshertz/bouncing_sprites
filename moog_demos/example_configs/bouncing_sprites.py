@@ -184,4 +184,5 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True,r
         'action_space': action_space,
         'observers': observer_dict,
     }
+
     return config
