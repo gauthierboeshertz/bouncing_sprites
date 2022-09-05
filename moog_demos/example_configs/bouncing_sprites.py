@@ -24,7 +24,7 @@ color_list = [[0,0,255],[255,0,0],[128,0,0],[255,255,0],[128,0,128]]
 TARGET_POSITIONS = [[0.25,0.25],[0.75,0.25],[0.25,0.75],[0.75,0.75]]
 SPRITES_POSITIONS = [[0.8,0.5],[0.4,0.8],[0.5,0.5],[0.2,0.2]]
 
-def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False):
+def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False):
     """Get environment config."""
 
     print("Using bouncing ball environment with {} sprites".format(num_sprites))
@@ -135,17 +135,25 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_rewards=True,r
     # Task
     ############################################################################
     contact_tasks = []
-    if sparse_rewards:
+    if sparse_reward:
+        for i in range(num_sprites):
+            contact_tasks.append(tasks.OneContactReward(1/num_sprites,
+            layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0))
+        
+        task = tasks.SparseContactReward(*contact_tasks, timeout_steps=timeout_steps)
+
+    elif contact_reward:
         for i in range(num_sprites):
             contact_tasks.append(tasks.OneContactReward(1/num_sprites,
             layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0))
 
+        task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps)
     else:
         for i in range(num_sprites):
-            contact_tasks.append(tasks.FindGoal(
+            contact_tasks.append(tasks.L2Reward(
             layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0,raw_reward_multiplier = 5,terminate_distance=TERMINATE_DISTANCE))
 
-    task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps)
+        task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps)
 
     ############################################################################
     # Action space

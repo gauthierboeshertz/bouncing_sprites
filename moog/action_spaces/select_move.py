@@ -90,7 +90,7 @@ class SelectMove(abstract_action_space.AbstractActionSpace):
         for sprite in state[action_layer]:
             sprites.append(sprite)
 
-    motion = self.get_motion(noised_action[2:],sprite)
+    
 
     clicked_sprite = self.get_sprite_from_position(position, sprites)
     
@@ -99,6 +99,8 @@ class SelectMove(abstract_action_space.AbstractActionSpace):
     #    print("POS",sprites[0].position)
 
     if clicked_sprite is not None:
+      motion = self.get_motion(noised_action[2:],clicked_sprite)
+      print(motion)
       #print("SPEED",clicked_sprite.velocity)
       clicked_sprite.velocity += (motion / clicked_sprite.mass)*self._scale #self._action / sprite.mass
       #print("S AFET",clicked_sprite.velocity)

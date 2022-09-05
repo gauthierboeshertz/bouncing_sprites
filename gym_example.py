@@ -50,7 +50,8 @@ def main(config):
 
     episode_timesteps = 100
     env_config = bouncing_sprites.get_config(num_sprites=config["num_sprites"],is_demo=False,timeout_steps=episode_timesteps, 
-                                                                sparse_rewards=config["sparse_rewards"],
+                                                                sparse_reward=config["sparse_reward"],
+                                                                contact_reward=config["contact_reward"],
                                                                 one_sprite_mover=config["one_sprite_mover"],
                                                                 all_sprite_mover=config["all_sprite_mover"],
                                                                 random_init_places=config["random_init_places"])
@@ -96,7 +97,8 @@ def main(config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_sprites', type=int, default=1)
-    parser.add_argument('--sparse_rewards', action="store_true")
+    parser.add_argument('--contact_reward', action="store_true")
+    parser.add_argument('--sparse_reward', action="store_true")
     parser.add_argument('--one_sprite_mover', action="store_true")
     parser.add_argument('--random_init_places', action="store_true")
     parser.add_argument('--all_sprite_mover', action="store_true")

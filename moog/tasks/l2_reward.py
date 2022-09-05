@@ -5,7 +5,7 @@ import inspect
 import numpy as np
 
 
-class FindGoal(abstract_task.AbstractTask):
+class L2Reward(abstract_task.AbstractTask):
     """ContactReward task.
     
     In this task if any sprite in layers_0 contacts any sprite in layers_1, a

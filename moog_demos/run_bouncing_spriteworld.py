@@ -21,9 +21,7 @@ custom gui interface.
 import sys
 sys.path.insert(0, '..')
 
-from absl import app
-from absl import flags
-import importlib
+import argparse
 import os
 
 from moog import env_wrappers
@@ -32,68 +30,43 @@ from moog import environment
 from moog_demos import gif_writer as gif_writer_lib
 from moog_demos import human_agent
 from moog_demos.example_configs.bouncing_sprites import get_config
-FLAGS = flags.FLAGS
-flags.DEFINE_string('config',
-                    'moog_demos.example_configs.pong',
-                    'Filename of task config to use.')
-flags.DEFINE_integer('num_sprites', 1, 'Whether to log timestep data.')
-flags.DEFINE_integer('render_size', 256,
-                     'Height and width of the output image.')
-flags.DEFINE_integer('anti_aliasing', 1, 'Renderer anti-aliasing factor.')
-flags.DEFINE_integer('fps', 50,
-                     'Upper bound on frames per second. Note: this is not an '
-                     'accurate fps for the demo, since matplotlib and tkinter '
-                     'introduce additional lag.')
-flags.DEFINE_integer('reward_history', 30,
-                     'Number of historical reward timesteps to plot.')
-
-# Flags for gif writing
-flags.DEFINE_boolean('write_gif', False, 'Whether to write a gif.')
-flags.DEFINE_string('gif_file',
-                    '/logs/gifs/test.gif',
-                    'File path to write the gif to.')
-flags.DEFINE_integer('gif_fps', 15, 'Frames per second for the gif.')
-
-# Flags for logging timestep data
-flags.DEFINE_boolean('log_data', False, 'Whether to log timestep data.')
-flags.DEFINE_boolean('one_sprite_mover', False, 'Whether to log timestep data.')
-flags.DEFINE_boolean('sparse_reward', True, 'use sparse reward which are only one if the sprite touches the goal.')
-flags.DEFINE_boolean('random_init_places', False, 'Whether to log timestep data.')
 
 
-def main(_):
+
+def main(config):
     """Run interactive task demo."""
-    print(FLAGS.one_sprite_mover)
-    config = get_config(num_sprites=FLAGS.num_sprites,is_demo=True,random_init_places=FLAGS.random_init_places,one_sprite_mover=FLAGS.one_sprite_mover)
-
+    render_size = 256
     print(config)
-    config['observers']['image'] = observers.PILRenderer(
-        image_size=(FLAGS.render_size, FLAGS.render_size),
-        anti_aliasing=FLAGS.anti_aliasing,
-        color_to_rgb=config['observers']['image'].color_to_rgb,
-        polygon_modifier=config['observers']['image'].polygon_modifier,
+    env_config = get_config(num_sprites=config["num_sprites"],is_demo=True,random_init_places=config["random_init_places"],one_sprite_mover=config["one_sprite_mover"],sparse_reward=config["sparse_reward"],contact_reward=config["contact_reward"])
+
+    print(env_config)
+    env_config['observers']['image'] = observers.PILRenderer(
+        image_size=(render_size, render_size),
+        anti_aliasing=1,
+        color_to_rgb=env_config['observers']['image'].color_to_rgb,
+        polygon_modifier=env_config['observers']['image'].polygon_modifier,
     )
 
-    if 'agents' in config:
+    if 'agents' in env_config:
         # Multi-agent demo
-        agents = config.pop('agents')
-        agent_name = config.pop('agent_name')
-        multi_env = environment.Environment(**config)
+        agents = env_config.pop('agents')
+        agent_name = env_config.pop('agent_name')
+        multi_env = environment.Environment(**env_config)
         env = env_wrappers.MultiAgentEnvironment(
             environment=multi_env, agent_name=agent_name, **agents)
     else:
         # Single-agent demo
-        env = environment.Environment(**config)
+        env = environment.Environment(**env_config)
 
-    if FLAGS.log_data:
+    if config["log_data"]:
         log_dir = os.path.join(
-            'logs', FLAGS.config.split('.')[-1], str(FLAGS.level))
+            'logs', "bouncing_spriteworld")
         env = env_wrappers.LoggingEnvironment(env, log_dir=log_dir)
 
-    if FLAGS.write_gif:
+    if config["write_gif"]:
         gif_writer = gif_writer_lib.GifWriter(
-            gif_file=FLAGS.gif_file,
-            fps=FLAGS.gif_fps,
+            gif_file="demo_gif",
+            fps=30,
         )
     else:
         gif_writer = None
@@ -101,12 +74,26 @@ def main(_):
     # Constructing the agent automatically starts the environment
     human_agent.HumanAgent(
         env,
-        render_size=FLAGS.render_size,
-        fps=FLAGS.fps,
-        reward_history=FLAGS.reward_history,
+        render_size=render_size,
+        fps=30,
+        reward_history=100,
         gif_writer=gif_writer,
     )
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--num_sprites', type=int, default=1)
+    parser.add_argument('--contact_reward', action="store_true")
+    parser.add_argument('--sparse_reward', action="store_true")
+    parser.add_argument('--one_sprite_mover', action="store_true")
+    parser.add_argument('--random_init_places', action="store_true")
+    parser.add_argument('--all_sprite_mover', action="store_true")
+    parser.add_argument('--algo', type=str,default="TD3")
+    parser.add_argument('--learn_timesteps', type=int,default=20000)
+    parser.add_argument('--seed', type=int,default=0)
+    parser.add_argument('--write_gif', action="store_true")
+    parser.add_argument('--log_data', action="store_true")
 
-if __name__ == "__main__":
-    app.run(main)
+    args = parser.parse_args()
+
+    main(vars(args))
