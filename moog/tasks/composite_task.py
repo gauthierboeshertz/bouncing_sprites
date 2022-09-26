@@ -13,7 +13,7 @@ class CompositeTask(abstract_task.AbstractTask):
     by the predators.
     """
 
-    def __init__(self, *tasks, timeout_steps=np.inf,all_reset=True):
+    def __init__(self, *tasks, timeout_steps=np.inf,all_reset=True,divide_by_tasks=False):
         """Constructor.
 
         Args:
@@ -22,7 +22,9 @@ class CompositeTask(abstract_task.AbstractTask):
             timeout_steps: After this number of steps since reset, a reset is
                 forced.
         """
+
         self._tasks = tasks
+        self.divide_by_tasks = divide_by_tasks
         self._timeout_steps = timeout_steps
         self._reseted_tasks = [False for _ in self._tasks]
 
@@ -41,4 +43,7 @@ class CompositeTask(abstract_task.AbstractTask):
             reward += task_reward
             self._reseted_tasks[task_idx] = task_should_reset  or  self._reseted_tasks[task_idx]
         
+        if self.divide_by_tasks:
+            reward = reward/len(self._tasks)
+            
         return reward, all(self._reseted_tasks) or timed_out

@@ -27,7 +27,6 @@ def do_env_episode(env,model,episode_timesteps,save_gif_file=None):
     
     ep_reward = 0
     obs = env.reset()
-    print(obs)
     for i in range(episode_timesteps):
         action, _states = model.predict(obs, deterministic=True)
         obs, rewards, done, info = env.step(action)
@@ -41,7 +40,7 @@ def do_env_episode(env,model,episode_timesteps,save_gif_file=None):
         env.save_episode_gif(save_gif_file)
     return ep_reward
 
-def main(config):
+def run_gym_example(config):
 
     
     print("CONFIG",config)
@@ -63,10 +62,10 @@ def main(config):
     
     #check_env(gym_env)
     callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=0.9, verbose=1)
-    eval_callback = EvalCallback(gym_env, callback_on_new_best=callback_on_best, verbose=1)
+    eval_callback = EvalCallback(gym_env, callback_on_new_best=callback_on_best, verbose=1,eval_freq=5000)
 
 
-    tensorboard_folder = "./logs/{}/{}_{}sprites_{}_{}".format("sparse_reward" if config["sparse_reward"] else "contact_reward" if config["contact_reward"] else "l2_reward",config["algo"],str(config["num_sprites"]), "one_sprite_mover" if config["one_sprite_mover"] else "all_sprite_mover" if config["all_sprite_mover"] else "select_move", "random_init" if config["random_init_places"] else "fixed_init")
+    tensorboard_folder = "./logs/{}/{}/{}sprites/{}_{}_seed{}".format("sparse_reward" if config["sparse_reward"] else "contact_reward" if config["contact_reward"] else "l2_reward",config["algo"],str(config["num_sprites"]), "one_sprite_mover" if config["one_sprite_mover"] else "all_sprite_mover" if config["all_sprite_mover"] else "select_move", "random_init" if config["random_init_places"] else "fixed_init", config["seed"])
 
     new_logger = configure(tensorboard_folder+"_log", ["stdout", "csv", "tensorboard"])
 
@@ -93,6 +92,7 @@ def main(config):
     print("mean reward",np.mean(test_rewards))
     print("reward std",np.std(test_rewards))
 
+    return test_rewards, tensorboard_folder
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -108,6 +108,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    main(vars(args))
+    run_gym_example(vars(args))
 
 

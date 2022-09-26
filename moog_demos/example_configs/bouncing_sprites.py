@@ -8,21 +8,44 @@ reward if contacted by a predators and positive reward periodically.
 
 import collections
 import numpy as np
+import matplotlib.colors as mcolors
+import random
 
 from moog import action_spaces
 from moog import physics as physics_lib
 from moog import observers
-from moog import sprite
+from moog import sprite 
 from moog import tasks
 from moog import shapes
 from moog.state_initialization import distributions as distribs
 from moog.state_initialization import sprite_generators
 
+
 RAW_REWARD_MULTIPLIER = 5
 TERMINATE_DISTANCE = 0.05
-color_list = [[0,0,255],[255,0,0],[128,0,0],[255,255,0],[128,0,128]]
-TARGET_POSITIONS = [[0.25,0.25],[0.75,0.25],[0.25,0.75],[0.75,0.75]]
-SPRITES_POSITIONS = [[0.8,0.5],[0.4,0.8],[0.5,0.5],[0.2,0.2]]
+color_list = [ (255*np.array(mcolors.to_rgb(color))).astype(np.int32).tolist() for name, color in mcolors.TABLEAU_COLORS.items()]#[[0,0,255],[255,0,0],[255,0,255],[0,0,0],[128,128,128],[255,0,255]]
+TARGET_POSITIONS = []
+#TARGET_POSITIONS = [[0.25,0.10],[0.75,0.10],[0.10,0.75],[0.50,0.75],[0.5,0.1],[0.8,0.5]]
+def gen_target_positions(delta_x,delta_y):
+    positions = []
+    for x in np.arange(0.90,0.1,-delta_x):
+        for y in np.arange(0.90,0.1,-delta_y):
+            positions.append([x,y])
+    return positions
+
+def gen_sprites_positions(delta_x,delta_y):
+    positions = []
+    for x in np.arange(0.2,0.91,delta_x):
+        for y in np.arange(0.2,0.91,delta_y):
+            positions.append([x,y])
+    return positions
+
+TARGET_POSITIONS = gen_target_positions(0.2,0.2)
+random.Random(0).shuffle(TARGET_POSITIONS)
+
+SPRITES_POSITIONS = gen_sprites_positions(0.2,0.2)
+random.Random(2).shuffle(SPRITES_POSITIONS)
+#SPRITES_POSITIONS = [[0.8,0.5],[0.4,0.8],[0.5,0.5],[0.2,0.2],[0.8,0.2],[0.8,0.5]]
 
 def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False):
     """Get environment config."""
@@ -50,7 +73,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             target_factors = distribs.Product(
                 [distribs.Discrete('x', [TARGET_POSITIONS[i][0]]),
                 distribs.Discrete('y', [TARGET_POSITIONS[i][1]])],
-                shape='circle', scale=0.05, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
+                shape='circle', scale=0.06, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
             )
 
             target_generator= sprite_generators.generate_sprites(
@@ -66,25 +89,28 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
 
             targets.append(target)#+ sum(targets) + sum(agents) ))
 
+        if random_init_places:
+            """
+            agents_factors = distribs.Product(
+                    [distribs.Continuous('x', 0.1, 0.9),
+                    distribs.Continuous('y', 0.1, 0.9)],
+                    #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
+                    #distribs.Discrete('y', [target_positions[i][1]-0.1])],
+
+                    shape='circle', scale=0.08, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
+                )
+            """
+            random.shuffle(SPRITES_POSITIONS)
+
         for i in range(num_sprites):
-            if random_init_places:
-                agents_factors = distribs.Product(
-                        [distribs.Continuous('x', 0.1, 0.9),
-                        distribs.Continuous('y', 0.1, 0.9)],
-                        #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
-                        #distribs.Discrete('y', [target_positions[i][1]-0.1])],
+            agents_factors = distribs.Product(
+                    [distribs.Discrete('x', [SPRITES_POSITIONS[i][0]]),
+                        distribs.Discrete('y', [SPRITES_POSITIONS[i][1]])],
+                    #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
+                    #distribs.Discrete('y', [target_positions[i][1]-0.1])],
 
-                        shape='circle', scale=0.08, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
-                    )
-            else:
-                agents_factors = distribs.Product(
-                        [distribs.Discrete('x', [SPRITES_POSITIONS[i][0]]),
-                            distribs.Discrete('y', [SPRITES_POSITIONS[i][1]])],
-                        #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
-                        #distribs.Discrete('y', [target_positions[i][1]-0.1])],
-
-                        shape='circle', scale=0.08, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
-                    )
+                    shape='circle', scale=0.08, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
+                )
 
             agents_generator = sprite_generators.generate_sprites(
                 agents_factors, num_sprites=1)
@@ -148,12 +174,13 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0))
 
         task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps)
+
     else:
         for i in range(num_sprites):
             contact_tasks.append(tasks.L2Reward(
             layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0,raw_reward_multiplier = 5,terminate_distance=TERMINATE_DISTANCE))
 
-        task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps)
+        task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps,divide_by_tasks=True)
 
     ############################################################################
     # Action space
@@ -161,13 +188,13 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
 
     if  one_sprite_mover:
         action_space = action_spaces.MoveOneSprite(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.01)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.005)
     elif all_sprite_mover:
         action_space = action_spaces.MoveAllSprites(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.005)
     else:
         action_space = action_spaces.SelectMove(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.005)
 
     ############################################################################
     # Observer
