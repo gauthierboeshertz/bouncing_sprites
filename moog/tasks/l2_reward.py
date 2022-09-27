@@ -110,6 +110,6 @@ class L2Reward(abstract_task.AbstractTask):
         self._steps_until_reset -= 1
         
         should_reset = self._steps_until_reset < 0
-
+        reward = reward * int(should_reset)
         #reward = reward if not self.has_made_contact else 0
         return reward, should_reset

@@ -26,6 +26,9 @@ TERMINATE_DISTANCE = 0.05
 color_list = [ (255*np.array(mcolors.to_rgb(color))).astype(np.int32).tolist() for name, color in mcolors.TABLEAU_COLORS.items()]#[[0,0,255],[255,0,0],[255,0,255],[0,0,0],[128,128,128],[255,0,255]]
 TARGET_POSITIONS = []
 #TARGET_POSITIONS = [[0.25,0.10],[0.75,0.10],[0.10,0.75],[0.50,0.75],[0.5,0.1],[0.8,0.5]]
+SPRITE_RADIUS = 0.045300698895537665
+TARGET_RADIUS = 0.03397552417165325
+
 def gen_target_positions(delta_x,delta_y):
     positions = []
     for x in np.arange(0.90,0.1,-delta_x):
@@ -42,10 +45,13 @@ def gen_sprites_positions(delta_x,delta_y):
 
 TARGET_POSITIONS = gen_target_positions(0.2,0.2)
 random.Random(0).shuffle(TARGET_POSITIONS)
+TARGET_POSITIONS = np.array(TARGET_POSITIONS)
 
 SPRITES_POSITIONS = gen_sprites_positions(0.2,0.2)
 random.Random(2).shuffle(SPRITES_POSITIONS)
 #SPRITES_POSITIONS = [[0.8,0.5],[0.4,0.8],[0.5,0.5],[0.2,0.2],[0.8,0.2],[0.8,0.5]]
+TARGET_POSITIONS = np.array([[0.4999999999999999, 0.4999999999999999], [0.2999999999999998, 0.4999999999999999], [0.7, 0.7], [0.9, 0.7], [0.4999999999999999, 0.7], [0.9, 0.4999999999999999], [0.9, 0.2999999999999998], [0.4999999999999999, 0.2999999999999998], [0.2999999999999998, 0.7], [0.7, 0.2999999999999998], [0.4999999999999999, 0.9], [0.7, 0.9], [0.9, 0.9], [0.7, 0.4999999999999999], [0.2999999999999998, 0.2999999999999998], [0.2999999999999998, 0.9]])
+SPRITES_POSITIONS = np.array([[0.8, 0.2], [0.6000000000000001, 0.8], [0.4, 0.8], [0.8, 0.4], [0.4, 0.6000000000000001], [0.2, 0.2], [0.6000000000000001, 0.2], [0.2, 0.8], [0.6000000000000001, 0.4], [0.4, 0.2], [0.6000000000000001, 0.6000000000000001], [0.2, 0.6000000000000001], [0.4, 0.4], [0.8, 0.6000000000000001], [0.8, 0.8], [0.2, 0.4]])
 
 def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False):
     """Get environment config."""
@@ -71,8 +77,8 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
         ## First create targets so other sprites cant go on them
         for i in range(num_sprites):
             target_factors = distribs.Product(
-                [distribs.Discrete('x', [TARGET_POSITIONS[i][0]]),
-                distribs.Discrete('y', [TARGET_POSITIONS[i][1]])],
+                [distribs.Discrete('x', [TARGET_POSITIONS[i,0]]),
+                distribs.Discrete('y', [TARGET_POSITIONS[i,1]])],
                 shape='circle', scale=0.06, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
             )
 

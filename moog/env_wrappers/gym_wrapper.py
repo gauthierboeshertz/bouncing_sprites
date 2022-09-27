@@ -75,7 +75,7 @@ class GymWrapper(gym.Env):
                 components[key] = spaces.Box(
                     0, 1, value.shape, dtype=value.dtype)
 
-            if len(self._env.observation_spec().keys()) == 1:
+            if len(self._env.observation_spec().keys()) == 1 or (len(self._env.observation_spec().keys()) == 2 and "image" in components.keys()) :
                 self._observation_space = components[list(self._env.observation_spec().keys())[0]]
             else:
                 self._observation_space = spaces.Dict(components)

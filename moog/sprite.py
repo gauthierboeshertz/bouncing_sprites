@@ -405,7 +405,6 @@ class Sprite(object):
         self._path = transform.transform_path(self._shape_path)
         self._max_radius = np.max(
             np.linalg.norm(self.vertices - self._position, axis=1))
-
         # Adjust rotational inertia to accomodate the change in aspect ratio and
         # scale
         self._x_y_rotational_inertia *= np.square(x_y_scale)

@@ -68,8 +68,8 @@ class MoveAllSprites(abstract_action_space.AbstractActionSpace):
     if action[0] == -10000:
         return
         #print(action)
-    noised_action = self.apply_noise_to_action(action)
-    
+    #noised_action = self.apply_noise_to_action(action)
+    noised_action = (action)
     for agent_idx, agent_layer in enumerate(self._action_layers):
         for sprite in state[agent_layer]:
             motion = self.get_motion(noised_action[2*agent_idx:2*(agent_idx+1)],sprite)
