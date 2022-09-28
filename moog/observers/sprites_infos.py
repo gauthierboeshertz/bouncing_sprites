@@ -36,6 +36,7 @@ class SpriteInfo(abstract_observer.AbstractObserver):
 
     def __init__(self,
                  sprite_layers= [],
+                 add_sprite_finished=False,
                   ):
         """Construct PIL renderer.
 
@@ -58,8 +59,11 @@ class SpriteInfo(abstract_observer.AbstractObserver):
                 .polygon_modifiers.py for examples.
         """
         self._sprite_layers = sprite_layers
+        self._add_sprite_finished = add_sprite_finished
+        
+        num_sprites = len(self._sprite_layers)
         self._observation_spec = specs.Array(
-            shape=  (len(self._sprite_layers)*4,), dtype=np.uint8)
+            shape=  (num_sprites*4 + (num_sprites if add_sprite_finished else 0),), dtype=np.uint8)
 
     def __call__(self, state):
         """
