@@ -49,9 +49,12 @@ TARGET_POSITIONS = np.array(TARGET_POSITIONS)
 
 SPRITES_POSITIONS = gen_sprites_positions(0.2,0.2)
 random.Random(2).shuffle(SPRITES_POSITIONS)
+#SPRITES_POSITIONS = np.array(SPRITES_POSITIONS)
 #SPRITES_POSITIONS = [[0.8,0.5],[0.4,0.8],[0.5,0.5],[0.2,0.2],[0.8,0.2],[0.8,0.5]]
+
+
 TARGET_POSITIONS = np.array([[0.4999999999999999, 0.4999999999999999], [0.2999999999999998, 0.4999999999999999], [0.7, 0.7], [0.9, 0.7], [0.4999999999999999, 0.7], [0.9, 0.4999999999999999], [0.9, 0.2999999999999998], [0.4999999999999999, 0.2999999999999998], [0.2999999999999998, 0.7], [0.7, 0.2999999999999998], [0.4999999999999999, 0.9], [0.7, 0.9], [0.9, 0.9], [0.7, 0.4999999999999999], [0.2999999999999998, 0.2999999999999998], [0.2999999999999998, 0.9]])
-SPRITES_POSITIONS = np.array([[0.8, 0.2], [0.6000000000000001, 0.8], [0.4, 0.8], [0.8, 0.4], [0.4, 0.6000000000000001], [0.2, 0.2], [0.6000000000000001, 0.2], [0.2, 0.8], [0.6000000000000001, 0.4], [0.4, 0.2], [0.6000000000000001, 0.6000000000000001], [0.2, 0.6000000000000001], [0.4, 0.4], [0.8, 0.6000000000000001], [0.8, 0.8], [0.2, 0.4]])
+SPRITES_POSITIONS = [[0.8, 0.2], [0.6000000000000001, 0.8], [0.4, 0.8], [0.8, 0.4], [0.4, 0.6000000000000001], [0.2, 0.2], [0.6000000000000001, 0.2], [0.2, 0.8], [0.6000000000000001, 0.4], [0.4, 0.2], [0.6000000000000001, 0.6000000000000001], [0.2, 0.6000000000000001], [0.4, 0.4], [0.8, 0.6000000000000001], [0.8, 0.8], [0.2, 0.4]]
 
 def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False):
     """Get environment config."""
@@ -95,6 +98,8 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
 
             targets.append(target)#+ sum(targets) + sum(agents) ))
 
+        print("before",SPRITES_POSITIONS)
+
         if random_init_places:
             """
             agents_factors = distribs.Product(
@@ -108,6 +113,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             """
             random.shuffle(SPRITES_POSITIONS)
 
+        print("after",SPRITES_POSITIONS)
         for i in range(num_sprites):
             agents_factors = distribs.Product(
                     [distribs.Discrete('x', [SPRITES_POSITIONS[i][0]]),
@@ -121,7 +127,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             agents_generator = sprite_generators.generate_sprites(
                 agents_factors, num_sprites=1)
 
-
+            print(i)
             if agents_overlap is None:
                 agent = agents_generator(without_overlapping=  walls + targets_overlap)
                 agents_overlap = agent
