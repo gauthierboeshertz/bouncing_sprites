@@ -98,7 +98,6 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
 
             targets.append(target)#+ sum(targets) + sum(agents) ))
 
-        print("before",SPRITES_POSITIONS)
 
         if random_init_places:
             """
@@ -113,7 +112,6 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             """
             random.shuffle(SPRITES_POSITIONS)
 
-        print("after",SPRITES_POSITIONS)
         for i in range(num_sprites):
             agents_factors = distribs.Product(
                     [distribs.Discrete('x', [SPRITES_POSITIONS[i][0]]),
@@ -127,7 +125,6 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             agents_generator = sprite_generators.generate_sprites(
                 agents_factors, num_sprites=1)
 
-            print(i)
             if agents_overlap is None:
                 agent = agents_generator(without_overlapping=  walls + targets_overlap)
                 agents_overlap = agent
