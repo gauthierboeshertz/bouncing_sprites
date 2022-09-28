@@ -25,7 +25,7 @@ def main(algo, num_seeds, do_l2=False,do_sparse=False,do_contact=False,start_spr
 
     config = {}
     config["all_sprite_mover"] = True
-    config["learn_timesteps"] = 100000
+    config["learn_timesteps"] = 150000
     config["one_sprite_mover"] = False
 
     config["algo"] = algo
