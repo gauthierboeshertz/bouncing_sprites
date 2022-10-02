@@ -44,15 +44,15 @@ def gen_sprites_positions(delta_x,delta_y):
     return positions
 
 TARGET_POSITIONS = gen_target_positions(0.2,0.2)
-random.Random(5).shuffle(TARGET_POSITIONS)
+random.Random(0).shuffle(TARGET_POSITIONS)
 TARGET_POSITIONS = np.array(TARGET_POSITIONS)
 
 SPRITES_POSITIONS = gen_sprites_positions(0.2,0.2)
-random.Random(4).shuffle(SPRITES_POSITIONS)
+random.Random(2).shuffle(SPRITES_POSITIONS)
 #SPRITES_POSITIONS = np.array(SPRITES_POSITIONS)
 #SPRITES_POSITIONS = [[0.8,0.5],[0.4,0.8],[0.5,0.5],[0.2,0.2],[0.8,0.2],[0.8,0.5]]
 
-
+#SPRITES_POSITIONS[0] = [0.5,0.5]
 #TARGET_POSITIONS = np.array([[0.4999999999999999, 0.4999999999999999], [0.2999999999999998, 0.4999999999999999], [0.7, 0.7], [0.9, 0.7], [0.4999999999999999, 0.7], [0.9, 0.4999999999999999], [0.9, 0.2999999999999998], [0.4999999999999999, 0.2999999999999998], [0.2999999999999998, 0.7], [0.7, 0.2999999999999998], [0.4999999999999999, 0.9], [0.7, 0.9], [0.9, 0.9], [0.7, 0.4999999999999999], [0.2999999999999998, 0.2999999999999998], [0.2999999999999998, 0.9]])
 #SPRITES_POSITIONS = [[0.8, 0.2], [0.6000000000000001, 0.8], [0.4, 0.8], [0.8, 0.4], [0.4, 0.6000000000000001], [0.2, 0.2], [0.6000000000000001, 0.2], [0.2, 0.8], [0.6000000000000001, 0.4], [0.4, 0.2], [0.6000000000000001, 0.6000000000000001], [0.2, 0.6000000000000001], [0.4, 0.4], [0.8, 0.6000000000000001], [0.8, 0.8], [0.2, 0.4]]
 
@@ -200,7 +200,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.005)
     elif all_sprite_mover:
         action_space = action_spaces.MoveAllSprites(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.005)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01)
     else:
         action_space = action_spaces.SelectMove(    
             action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.005)
