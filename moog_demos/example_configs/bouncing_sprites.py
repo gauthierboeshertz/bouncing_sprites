@@ -52,9 +52,7 @@ random.Random(2).shuffle(SPRITES_POSITIONS)
 #SPRITES_POSITIONS = np.array(SPRITES_POSITIONS)
 #SPRITES_POSITIONS = [[0.8,0.5],[0.4,0.8],[0.5,0.5],[0.2,0.2],[0.8,0.2],[0.8,0.5]]
 
-#SPRITES_POSITIONS[0] = [0.5,0.5]
-#TARGET_POSITIONS = np.array([[0.4999999999999999, 0.4999999999999999], [0.2999999999999998, 0.4999999999999999], [0.7, 0.7], [0.9, 0.7], [0.4999999999999999, 0.7], [0.9, 0.4999999999999999], [0.9, 0.2999999999999998], [0.4999999999999999, 0.2999999999999998], [0.2999999999999998, 0.7], [0.7, 0.2999999999999998], [0.4999999999999999, 0.9], [0.7, 0.9], [0.9, 0.9], [0.7, 0.4999999999999999], [0.2999999999999998, 0.2999999999999998], [0.2999999999999998, 0.9]])
-#SPRITES_POSITIONS = [[0.8, 0.2], [0.6000000000000001, 0.8], [0.4, 0.8], [0.8, 0.4], [0.4, 0.6000000000000001], [0.2, 0.2], [0.6000000000000001, 0.2], [0.2, 0.8], [0.6000000000000001, 0.4], [0.4, 0.2], [0.6000000000000001, 0.6000000000000001], [0.2, 0.6000000000000001], [0.4, 0.4], [0.8, 0.6000000000000001], [0.8, 0.8], [0.2, 0.4]]
+
 
 def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False):
     """Get environment config."""
@@ -187,7 +185,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
     else:
         for i in range(num_sprites):
             contact_tasks.append(tasks.L2Reward(
-            layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0,raw_reward_multiplier = 5,terminate_distance=TERMINATE_DISTANCE))
+            layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0,raw_reward_multiplier = RAW_REWARD_MULTIPLIER,terminate_distance=TERMINATE_DISTANCE))
 
         task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps,divide_by_tasks=True)
 
@@ -200,7 +198,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.005)
     elif all_sprite_mover:
         action_space = action_spaces.MoveAllSprites(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.005)
     else:
         action_space = action_spaces.SelectMove(    
             action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.005)
