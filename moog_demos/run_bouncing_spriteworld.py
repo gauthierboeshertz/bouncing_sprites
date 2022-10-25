@@ -45,6 +45,7 @@ def main(config):
         anti_aliasing=1,
         color_to_rgb=env_config['observers']['image'].color_to_rgb,
         polygon_modifier=env_config['observers']['image'].polygon_modifier,
+        bg_color = (0,0,0)
     )
 
     if 'agents' in env_config:

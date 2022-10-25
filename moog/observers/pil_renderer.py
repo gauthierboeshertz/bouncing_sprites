@@ -82,6 +82,7 @@ class PILRenderer(abstract_observer.AbstractObserver):
             bg_color = (255, 255, 255)
         self._canvas_bg = Image.new('RGB', self._canvas_size, bg_color)
 
+        print(self._canvas_bg)
         self._canvas = Image.new('RGB', self._canvas_size)
         self._draw = ImageDraw.Draw(self._canvas, 'RGBA')
 

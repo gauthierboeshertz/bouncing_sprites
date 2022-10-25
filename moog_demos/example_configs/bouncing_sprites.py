@@ -54,7 +54,7 @@ random.Random(2).shuffle(SPRITES_POSITIONS)
 
 
 
-def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False):
+def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False,visual_obs=False):
     """Get environment config."""
 
     print("Using bouncing ball environment with {} sprites".format(num_sprites))
@@ -76,11 +76,12 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
         agents_overlap = None
 
         ## First create targets so other sprites cant go on them
+        sprite_shape = "circle"
         for i in range(num_sprites):
             target_factors = distribs.Product(
                 [distribs.Discrete('x', [TARGET_POSITIONS[i,0]]),
                 distribs.Discrete('y', [TARGET_POSITIONS[i,1]])],
-                shape='circle', scale=0.06, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
+                shape="square", scale=0.06, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
             )
 
             target_generator= sprite_generators.generate_sprites(
@@ -117,7 +118,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
                     #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
                     #distribs.Discrete('y', [target_positions[i][1]-0.1])],
 
-                    shape='circle', scale=0.08, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
+                    shape=sprite_shape, scale=0.08, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
                 )
 
             agents_generator = sprite_generators.generate_sprites(
@@ -195,25 +196,28 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
 
     if  one_sprite_mover:
         action_space = action_spaces.MoveOneSprite(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.005)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.02)
     elif all_sprite_mover:
         action_space = action_spaces.MoveAllSprites(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.005)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.02)
     else:
         action_space = action_spaces.SelectMove(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.005)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.02)
 
     ############################################################################
     # Observer
     ############################################################################
 
-    observer_info = observers.SpriteInfo(sprite_layers=tuple(['agent'+str(i) for i in range(num_sprites)]))
-
-    observer_dict = {"sprite_info":observer_info}
-    if is_demo:
+    observer_dict = {}
+    if visual_obs or is_demo:
         observer_image = observers.PILRenderer(
-            image_size=(64, 64), anti_aliasing=1, color_to_rgb=None,bg_color=(255,255,255))
+            image_size=(64, 64), anti_aliasing=1, color_to_rgb=None,bg_color=(0,0,0))
         observer_dict['image'] = observer_image
+        
+    else:
+        observer_info = observers.SpriteInfo(sprite_layers=tuple(['agent'+str(i) for i in range(num_sprites)]))
+        observer_dict["sprite_info"] = observer_info
+        
 
     ############################################################################
     # Final config
