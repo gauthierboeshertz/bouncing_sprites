@@ -211,7 +211,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
     observer_dict = {}
     if visual_obs or is_demo:
         observer_image = observers.PILRenderer(
-            image_size=(64, 64), anti_aliasing=1, color_to_rgb=None,bg_color=(0,0,0))
+            image_size=(128, 128), anti_aliasing=1, color_to_rgb=None,bg_color=(0,0,0))
         observer_dict['image'] = observer_image
         
     else:
