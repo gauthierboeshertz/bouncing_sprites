@@ -81,7 +81,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             target_factors = distribs.Product(
                 [distribs.Discrete('x', [TARGET_POSITIONS[i,0]]),
                 distribs.Discrete('y', [TARGET_POSITIONS[i,1]])],
-                shape="square", scale=0.06, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
+                shape="square", scale=0.03, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
             )
 
             target_generator= sprite_generators.generate_sprites(
