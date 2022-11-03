@@ -26,7 +26,7 @@ class SelectMove(abstract_action_space.AbstractActionSpace):
   """
 
   def __init__(self, action_layers='agent',
-                scale=1.0, motion_cost=0.0, noise_scale=None):
+                scale=1.0, motion_cost=0.0, noise_scale=None,instant_move=False):
     """Constructor.
 
     Args:
@@ -39,6 +39,7 @@ class SelectMove(abstract_action_space.AbstractActionSpace):
     self._scale = scale
     self._motion_cost = motion_cost
     self._noise_scale = noise_scale
+    self._instant_move = instant_move
     self._action_spec = specs.BoundedArray(
         shape=(4,), dtype=np.float32, minimum=0.0, maximum=1.0)
 
@@ -101,7 +102,10 @@ class SelectMove(abstract_action_space.AbstractActionSpace):
     if clicked_sprite is not None:
       motion = self.get_motion(noised_action[2:],clicked_sprite)
       #print("SPEED",clicked_sprite.velocity)
-      clicked_sprite.velocity += (motion / clicked_sprite.mass)*self._scale #self._action / sprite.mass
+      if not self._instant_move:
+          clicked_sprite.velocity += (motion / clicked_sprite.mass)*self._scale #self._action / sprite.mass
+      else:
+          clicked_sprite.velocity = (motion / clicked_sprite.mass)*self._scale
       #print("S AFET",clicked_sprite.velocity)
     
 

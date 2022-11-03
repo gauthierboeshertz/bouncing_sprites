@@ -11,7 +11,7 @@ class MoveAllSprites(abstract_action_space.AbstractActionSpace):
   """
 
   def __init__(self, action_layers=[],
-                scale=1.0, motion_cost=0.0, noise_scale=None):
+                scale=1.0, motion_cost=0.0, noise_scale=None,instant_move=False):
     """Constructor.
 
     Args:
@@ -24,6 +24,7 @@ class MoveAllSprites(abstract_action_space.AbstractActionSpace):
     self._scale = scale
     self._motion_cost = motion_cost
     self._noise_scale = noise_scale
+    self._instant_move = instant_move
     self._action_spec = specs.BoundedArray(
         shape=(2*len(action_layers),), dtype=np.float32, minimum=0.0, maximum=1.0)
 
@@ -73,8 +74,10 @@ class MoveAllSprites(abstract_action_space.AbstractActionSpace):
     for agent_idx, agent_layer in enumerate(self._action_layers):
         for sprite in state[agent_layer]:
             motion = self.get_motion(noised_action[2*agent_idx:2*(agent_idx+1)],sprite)
-            sprite.velocity += (motion / sprite.mass)*self._scale #self._action / sprite.mass
-    
+            if not self._instant_move:
+              sprite.velocity += (motion / sprite.mass)*self._scale #self._action / sprite.mass
+            else:
+              sprite.position = (motion / sprite.mass)*self._scale
 
   def reset(self, state):
       """Reset action space at start of new episode."""
