@@ -23,7 +23,10 @@ from moog.state_initialization import sprite_generators
 
 RAW_REWARD_MULTIPLIER = 5
 TERMINATE_DISTANCE = 0.05
-color_list = [ (255*np.array(mcolors.to_rgb(color))).astype(np.int32).tolist() for name, color in mcolors.TABLEAU_COLORS.items()]#[[0,0,255],[255,0,0],[255,0,255],[0,0,0],[128,128,128],[255,0,255]]
+#color_list = [ (255*np.array(mcolors.to_rgb(color))).astype(np.int32).tolist() for name, color in mcolors.TABLEAU_COLORS.items()]#[[0,0,255],[255,0,0],[255,0,255],[0,0,0],[128,128,128],[255,0,255]]
+color_list = [ (255*np.array([1,0,0])).tolist(), (255*np.array([0,1,0])).tolist(), (255*np.array([0,0,1])).tolist(), (255*np.array([1,1,1])).tolist(), (255*np.array([0.5,0.5,0])).tolist(), (255*np.array([0.5,0,0.5])).tolist()]
+
+
 TARGET_POSITIONS = []
 #TARGET_POSITIONS = [[0.25,0.10],[0.75,0.10],[0.10,0.75],[0.50,0.75],[0.5,0.1],[0.8,0.5]]
 SPRITE_RADIUS = 0.045300698895537665
@@ -196,13 +199,13 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
 
     if  one_sprite_mover:
         action_space = action_spaces.MoveOneSprite(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.02)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.01)
     elif all_sprite_mover:
         action_space = action_spaces.MoveAllSprites(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.02)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01)
     else:
         action_space = action_spaces.SelectMove(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.02)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01)
 
     ############################################################################
     # Observer
