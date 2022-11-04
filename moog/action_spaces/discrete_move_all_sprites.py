@@ -1,13 +1,19 @@
 
 from . import abstract_action_space
-from dm_env import specs
 import numpy as np
+from gym.spaces import MultiDiscrete
+from enum   import Enum
 
+class Act(Enum):
+    LEFT = 0
+    RIGHT = 1
+    UP = 2
+    DOWN = 3
+    NO_ACTION = 4
 
-class MoveAllSprites(abstract_action_space.AbstractActionSpace):
+class DiscreteMoveAllSprites(abstract_action_space.AbstractActionSpace):
   """
-  Moves the first sprite in the list that has not reached his target
-  action shape is (2* number of sprites,) which is the direction to give the sprite
+  Move sprites LEFT RIGHT UP DOWN 
   """
 
   def __init__(self, action_layers=[],
@@ -25,34 +31,37 @@ class MoveAllSprites(abstract_action_space.AbstractActionSpace):
     self._motion_cost = motion_cost
     self._noise_scale = noise_scale
     self._instant_move = instant_move
-    self._action_spec = specs.BoundedArray(
-        shape=(2*len(action_layers),), dtype=np.float32, minimum=0.0, maximum=1.0)
+    self._action_spec = MultiDiscrete([4 for _ in range(len(action_layers))])
 
     if not isinstance(action_layers, (list, tuple)):
         action_layers = (action_layers,)
     self._action_layers = action_layers
 
 
-
-  def apply_noise_to_action(self, action):
-    if self._noise_scale:
-      noise = np.random.normal(
-          loc=0.0, scale=self._noise_scale, size=action.shape)
-      return action + noise
-    else:
-      return action
-
-  def get_motion(self, action,sprite):
+  def _get_motion(self, action,sprite):
     #delta_pos = (action[2:] - 0.5) * self._scale
-    delta_pos = action - sprite.position
-    return delta_pos
 
-  def get_sprite_from_position(self, position, sprites):
-    for sprite in sprites[::-1]:
-      if sprite.contains_point(position):
-        return sprite
-    return None
+      delta_pos = sprite.position - sprite.position
+      return delta_pos
 
+  def move_discrete(self, action, sprite):
+    
+      if action == Act.LEFT:
+          act = np.array([-1,0])
+      elif action == Act.RIGHT:
+          act = np.array([1,0])
+      elif action == Act.UP:
+          act = np.array([0,-1])
+      elif action == Act.DOWN:
+          act = np.array([0,1])      
+      elif action == Act.NO_ACTION:
+          print("No action")
+          return
+      else:
+          raise ValueError("Invalid action")
+      sprite.velocity = (act / sprite.mass)*self._scale
+      
+      
   def step(self, state, action):
     """Take an action and move the sprites.
     Args:
@@ -66,19 +75,13 @@ class MoveAllSprites(abstract_action_space.AbstractActionSpace):
     Returns:
       Scalar cost of taking this action.
     """
-    if action[0] == -10000:
-        return
         #print(action)
     #noised_action = self.apply_noise_to_action(action)
-    noised_action = (action)
     for agent_idx, agent_layer in enumerate(self._action_layers):
         for sprite in state[agent_layer]:
-            motion = self.get_motion(noised_action[2*agent_idx:2*(agent_idx+1)],sprite)
-            if not self._instant_move:
-              sprite.velocity += (motion / sprite.mass)*self._scale #self._action / sprite.mass
-            else:
-              sprite.velocity = (motion / sprite.mass)*self._scale
-
+            s_act = action[agent_idx]
+            self.move_discrete(s_act, sprite)
+            
   def reset(self, state):
       """Reset action space at start of new episode."""
 

@@ -216,6 +216,7 @@ class GridActions(tk.Frame):
             return 4  # Do-nothing action
 
 
+
 class SetPositionFrame():
     """SetPosition Tkinter frame.
 
@@ -388,6 +389,57 @@ class MoveOneSpriteFrame():
             return np.array([ self._mouse_coords_release[0], 1. - self._mouse_coords_release[1]])
         else:
             return np.array([-10000, -10000])
+
+class DiscreteSpriteMoverFrame(tk.Frame):
+    """Grid actions Tkinter frame.
+
+    This creates an empty Tkinter frame where the joystick would be. It also
+    registers bindings responding to arrow key presses and releases, and turns
+    them into discrete actions for a Grid action space.
+    """
+
+    def __init__(self, canvas, canvas_half_width=100):
+        """Constructor.
+
+        Args:
+            root: Instance of tk.Frame. Root frame in which the gui frame lives.
+            canvas_half_width: Int. Half of the width of the canvas to create.
+        """
+        super(DiscreteSpriteMoverFrame, self).__init__(canvas)
+        self._current_key = 0  # Do-nothing action
+        
+        canvas.bind('<KeyPress>', self._key_press)
+        canvas.bind('<KeyRelease>', self._key_release)
+
+        # Add bindings for key presses and releases
+
+    def _get_action_from_event(self, event):
+        if event.keysym == 'Left':
+            return 0
+        elif event.keysym == 'Right':
+            return 1
+        elif event.keysym == 'Up':
+            return 2
+        elif event.keysym == 'Down':
+            return 3
+        else:
+            return 4
+
+    def _key_press(self, event):
+        self._current_key = self._get_action_from_event(event)
+
+    def _key_release(self, event):
+        if self._get_action_from_event(event) == self._current_key:
+            self._current_key = None
+
+    @property
+    def action(self):
+        if self._current_key is not None:
+            return self._current_key
+        else:
+            return 4  # Do-nothing action
+
+
 
 class TwoPlayerGridActions(tk.Frame):
     """2-player grid actions Tkinter frame.

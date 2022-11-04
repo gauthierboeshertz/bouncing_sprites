@@ -190,6 +190,13 @@ class HumanAgent():
                 canvas_half_width=canvas_half_width,
             )
 
+        elif isinstance(action_space, ( action_spaces.DiscreteMoveAllSprites)):
+            logging.info('Discrete action space, Click on sprite and move and release to direct.')
+            self.gui_frame = gui_frames.DiscreteSpriteMoverFrame(
+                self._env_canvas,
+                canvas_half_width=canvas_half_width,
+            )
+
         elif not isinstance(action_space, action_spaces.Composite):
             raise ValueError(
                 'Cannot demo action space {}'.format(env.action_space))

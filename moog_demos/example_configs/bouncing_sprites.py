@@ -57,7 +57,7 @@ random.Random(2).shuffle(SPRITES_POSITIONS)
 
 
 
-def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False,visual_obs=False,instant_move=False):
+def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False,visual_obs=False,instant_move=False,action_scale=0.01):
     """Get environment config."""
 
     print("Using bouncing ball environment with {} sprites".format(num_sprites))
@@ -199,13 +199,13 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
 
     if  one_sprite_mover:
         action_space = action_spaces.MoveOneSprite(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=0.01)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]),agent_tasks=contact_tasks ,scale=action_scale)
     elif all_sprite_mover:
         action_space = action_spaces.MoveAllSprites(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01,instant_move=instant_move)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,instant_move=instant_move,scale=action_scale)
     else:
         action_space = action_spaces.SelectMove(    
-            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,scale=0.01,instant_move=instant_move)
+            action_layers=tuple(['agent'+str(i) for i in range(num_sprites)]) ,instant_move=instant_move,scale=action_scale)
 
     ############################################################################
     # Observer
