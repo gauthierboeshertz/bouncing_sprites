@@ -2,9 +2,9 @@
 from . import abstract_action_space
 import numpy as np
 from gym.spaces import MultiDiscrete
-from enum   import Enum
+from enum   import IntEnum
 
-class Act(Enum):
+class Act(IntEnum):
     LEFT = 0
     RIGHT = 1
     UP = 2
@@ -45,17 +45,20 @@ class DiscreteMoveAllSprites(abstract_action_space.AbstractActionSpace):
       return delta_pos
 
   def move_discrete(self, action, sprite):
-    
+
+      #print(action)
+      #print(Act.NO_ACTION)
+      
       if action == Act.LEFT:
           act = np.array([-1,0])
       elif action == Act.RIGHT:
           act = np.array([1,0])
       elif action == Act.UP:
-          act = np.array([0,-1])
+          act = np.array([0,1])
       elif action == Act.DOWN:
-          act = np.array([0,1])      
+          act = np.array([0,-1])      
       elif action == Act.NO_ACTION:
-          print("No action")
+          #print("No action")
           return
       else:
           raise ValueError("Invalid action")
@@ -80,6 +83,7 @@ class DiscreteMoveAllSprites(abstract_action_space.AbstractActionSpace):
     for agent_idx, agent_layer in enumerate(self._action_layers):
         for sprite in state[agent_layer]:
             s_act = action[agent_idx]
+            
             self.move_discrete(s_act, sprite)
             
   def reset(self, state):

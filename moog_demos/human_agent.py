@@ -192,8 +192,9 @@ class HumanAgent():
 
         elif isinstance(action_space, ( action_spaces.DiscreteMoveAllSprites)):
             logging.info('Discrete action space, Click on sprite and move and release to direct.')
+            print("BRRR")
             self.gui_frame = gui_frames.DiscreteSpriteMoverFrame(
-                self._env_canvas,
+                self.root,
                 canvas_half_width=canvas_half_width,
             )
 
@@ -201,7 +202,7 @@ class HumanAgent():
             raise ValueError(
                 'Cannot demo action space {}'.format(env.action_space))
 
-        if not isinstance(action_space, (action_spaces.SetPosition, action_spaces.SelectMove,action_spaces.MoveOneSprite)):
+        if not isinstance(action_space, (action_spaces.SetPosition, action_spaces.SelectMove,action_spaces.MoveOneSprite,action_spaces.DiscreteMoveAllSprites)):
             self.gui_frame.canvas.pack(side=tk.BOTTOM)
 
         ########################################################################

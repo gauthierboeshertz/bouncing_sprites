@@ -398,32 +398,33 @@ class DiscreteSpriteMoverFrame(tk.Frame):
     them into discrete actions for a Grid action space.
     """
 
-    def __init__(self, canvas, canvas_half_width=100):
+    def __init__(self, root, canvas_half_width=100):
         """Constructor.
 
         Args:
             root: Instance of tk.Frame. Root frame in which the gui frame lives.
             canvas_half_width: Int. Half of the width of the canvas to create.
         """
-        super(DiscreteSpriteMoverFrame, self).__init__(canvas)
-        self._current_key = 0  # Do-nothing action
+        super(DiscreteSpriteMoverFrame, self).__init__(root)
+        self._current_key = [4]  # Do-nothing action
         
-        canvas.bind('<KeyPress>', self._key_press)
-        canvas.bind('<KeyRelease>', self._key_release)
+        root.bind('<KeyPress>', self._key_press)
+        root.bind('<KeyRelease>', self._key_release)
 
         # Add bindings for key presses and releases
 
     def _get_action_from_event(self, event):
+        print("EVEN KEYPRESS")
         if event.keysym == 'Left':
-            return 0
+            return [0]
         elif event.keysym == 'Right':
-            return 1
+            return [1]
         elif event.keysym == 'Up':
-            return 2
+            return [2]
         elif event.keysym == 'Down':
-            return 3
+            return [3]
         else:
-            return 4
+            return [4]
 
     def _key_press(self, event):
         self._current_key = self._get_action_from_event(event)
@@ -437,7 +438,7 @@ class DiscreteSpriteMoverFrame(tk.Frame):
         if self._current_key is not None:
             return self._current_key
         else:
-            return 4  # Do-nothing action
+            return [4]  # Do-nothing action
 
 
 
