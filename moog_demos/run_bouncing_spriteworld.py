@@ -38,7 +38,7 @@ def main(config):
     render_size = 256
     print(config)
     env_config = get_config(num_sprites=config["num_sprites"],is_demo=True,random_init_places=config["random_init_places"],one_sprite_mover=config["one_sprite_mover"],
-                            discrete_move_all_sprites= config["discrete_move_all_sprites"],sparse_reward=config["sparse_reward"],contact_reward=config["contact_reward"])
+                            discrete_all_sprite_mover= config["discrete_all_sprite_mover"],sparse_reward=config["sparse_reward"],contact_reward=config["contact_reward"])
 
     print(env_config)
     env_config['observers']['image'] = observers.PILRenderer(
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     parser.add_argument('--contact_reward', action="store_true")
     parser.add_argument('--sparse_reward', action="store_true")
     parser.add_argument('--one_sprite_mover', action="store_true")
-    parser.add_argument('--discrete_move_all_sprites', action="store_true")
+    parser.add_argument('--discrete_all_sprite_mover', action="store_true")
     parser.add_argument('--random_init_places', action="store_true")
     parser.add_argument('--all_sprite_mover', action="store_true")
     parser.add_argument('--algo', type=str,default="TD3")
