@@ -19,15 +19,25 @@ from stable_baselines3 import HER
 from stable_baselines3.common.env_checker import check_env
 
 
-env_config = bouncing_sprites.get_config(num_sprites=2,is_demo=False,timeout_steps=50,sparse_rewards=False)
+env_config = bouncing_sprites.get_config(num_sprites=4,is_demo=False,visual_obs=True, add_sprite_info=True,
+                                         discrete_all_sprite_mover=True,timeout_steps=50)
 
 env = environment.Environment(**env_config)
 
 gym_env = gym_wrapper.GymWrapper(env)
 
-check_env(gym_env)
-model = HER("MlpPolicy", gym_env, verbose=1)
-model.learn(total_timesteps=30000)
+
+for i in range(10):
+    obs = gym_env.reset()
+    done = False
+    while not done:
+        action = gym_env.action_space.sample()
+        obs, reward, done, info = gym_env.step(action)
+        print(obs.shape)
+        print(info)
+        break
+        if done:
+            break
 
 
 

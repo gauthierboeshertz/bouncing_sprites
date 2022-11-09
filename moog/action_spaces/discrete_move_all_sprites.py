@@ -83,7 +83,6 @@ class DiscreteMoveAllSprites(abstract_action_space.AbstractActionSpace):
     for agent_idx, agent_layer in enumerate(self._action_layers):
         for sprite in state[agent_layer]:
             s_act = action[agent_idx]
-            
             self.move_discrete(s_act, sprite)
             
   def reset(self, state):
@@ -91,7 +90,7 @@ class DiscreteMoveAllSprites(abstract_action_space.AbstractActionSpace):
 
   def random_action(self):
       """Return randomly sampled action."""
-      return np.random.uniform(0., 1., size=self._action_spec.shape)
+      return np.random.randint(4, size=len(self._action_layers)) 
   
   def action_spec(self):
       return self._action_spec

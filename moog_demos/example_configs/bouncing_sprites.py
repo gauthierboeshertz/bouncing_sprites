@@ -34,7 +34,7 @@ TARGET_RADIUS = 0.03397552417165325
 
 def gen_target_positions(delta_x,delta_y):
     positions = []
-    for x in np.arange(0.90,0.1,-delta_x):
+    for x in np.arange(0.8,0.15,-delta_x):
         for y in np.arange(0.90,0.1,-delta_y):
             positions.append([x,y])
     return positions
@@ -47,7 +47,7 @@ def gen_sprites_positions(delta_x,delta_y):
     return positions
 
 TARGET_POSITIONS = gen_target_positions(0.2,0.2)
-random.Random(0).shuffle(TARGET_POSITIONS)
+random.Random(2).shuffle(TARGET_POSITIONS)
 TARGET_POSITIONS = np.array(TARGET_POSITIONS)
 
 SPRITES_POSITIONS = gen_sprites_positions(0.2,0.2)
@@ -57,7 +57,9 @@ random.Random(2).shuffle(SPRITES_POSITIONS)
 
 
 
-def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False, discrete_all_sprite_mover=False, visual_obs=False,instant_move=False,action_scale=0.01):
+def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False, 
+               discrete_all_sprite_mover=False, visual_obs=False,instant_move=False,action_scale=0.01,
+               add_sprite_info=False):
     """Get environment config."""
 
     print("Using bouncing ball environment with {} sprites".format(num_sprites))
@@ -220,7 +222,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
             image_size=(128, 128), anti_aliasing=1, color_to_rgb=None,bg_color=(0,0,0))
         observer_dict['image'] = observer_image
         
-    else:
+    if not visual_obs or add_sprite_info:
         observer_info = observers.SpriteInfo(sprite_layers=tuple(['agent'+str(i) for i in range(num_sprites)]))
         observer_dict["sprite_info"] = observer_info
         

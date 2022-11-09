@@ -25,13 +25,20 @@ import numpy as np
 import gym  
 from .gym_utils import *
 from array2gif import write_gif
+import copy
 
 def _spec_to_space(spec):
     """Convert dm_env.specs to gym.Spaces."""
     if isinstance(spec, list):
         return spaces.Tuple([_spec_to_space(s) for s in spec])
-    elif isinstance(spec, specs.DiscreteArray):
-        return spaces.Discrete(spec.num_values)
+    elif isinstance(spec, spaces.MultiDiscrete):
+        return copy.deepcopy(spec)
+    elif isinstance(spec, specs.BoundedArray):
+        return spaces.Box(
+            low=spec.minimum,
+            high=spec.maximum,
+            shape=spec.shape,
+            dtype=spec.dtype)
     elif isinstance(spec, specs.BoundedArray):
         return spaces.Box(
             spec.minimum.item(),
@@ -127,6 +134,8 @@ class GymWrapper(gym.Env):
         reward = time_step.reward or 0
         done = time_step.last()
         info = {'discount': time_step.discount}
+        if "sprite_info" in time_step.observation.keys():
+            info["sprite_info"] = time_step.observation["sprite_info"]
         return obs, reward, done, info
 
     def reset(self):
