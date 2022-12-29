@@ -45,5 +45,8 @@ class CompositeTask(abstract_task.AbstractTask):
         
         if self.divide_by_tasks:
             reward = reward/len(self._tasks)
-            
+        
+        if reward == 0:
+            reward = -1/self._timeout_steps
+        
         return reward, all(self._reseted_tasks) or timed_out

@@ -21,6 +21,7 @@ class OneContactReward(abstract_task.AbstractTask):
                  layers_0,
                  layers_1,
                  condition=None,
+                 disappear_after_contact=False,
                  reset_steps_after_contact=np.inf):
         """Constructor.
 
@@ -42,6 +43,7 @@ class OneContactReward(abstract_task.AbstractTask):
                 reset the environment. Defaults to infinity, i.e. never
                 resetting.
         """
+        self.disappear_after_contact = disappear_after_contact
         if not callable(reward_fn):
             self._reward_fn = lambda sprite_0, sprite_1: reward_fn
         else:
@@ -72,7 +74,13 @@ class OneContactReward(abstract_task.AbstractTask):
 
     def has_finished(self):
         return self._has_made_contact
-        
+    
+    def _remove_sprites(self, sprite):
+        sprite.c0 = 0
+        sprite.c1 = 0
+        sprite.c2 = 0
+        sprite.scale = 0.001
+    
     def reward(self, state, meta_state, step_count):
         """Compute reward.
         
@@ -97,6 +105,10 @@ class OneContactReward(abstract_task.AbstractTask):
                 if not self._condition(s_0, s_1, meta_state):
                     continue
                 if s_0.overlaps_sprite(s_1):
+                    if self.disappear_after_contact:
+                        self._remove_sprites(s_0)
+                        self._remove_sprites(s_1)
+                    
                     reward = self._reward_fn(s_0, s_1)
                     if self._steps_until_reset == np.inf:
                         self._steps_until_reset = (

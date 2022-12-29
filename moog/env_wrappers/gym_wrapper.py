@@ -34,9 +34,10 @@ def _spec_to_space(spec):
     elif isinstance(spec, spaces.MultiDiscrete):
         return copy.deepcopy(spec)
     elif isinstance(spec, specs.BoundedArray):
+        print("spec",spec)
         return spaces.Box(
-            low=spec.minimum,
-            high=spec.maximum,
+            low=spec.minimum * np.ones(spec.shape),
+            high=spec.maximum* np.ones(spec.shape),
             shape=spec.shape,
             dtype=spec.dtype)
     elif isinstance(spec, specs.BoundedArray):
@@ -79,8 +80,12 @@ class GymWrapper(gym.Env):
         if self._observation_space is None:
             components = {}
             for key, value in self._env.observation_spec().items():
-                components[key] = spaces.Box(
-                    0, 1, value.shape, dtype=value.dtype)
+                if "image" in key:
+                    components[key] = spaces.Box(
+                    0, 255, value.shape, dtype=np.uint8)
+                else:
+                    components[key] = spaces.Box(
+                        0, 1, value.shape, dtype=value.dtype)
 
             if len(self._env.observation_spec().keys()) == 1 or (len(self._env.observation_spec().keys()) == 2 and "image" in components.keys()) :
                 self._observation_space = components[list(self._env.observation_spec().keys())[0]]
@@ -136,6 +141,9 @@ class GymWrapper(gym.Env):
         info = {'discount': time_step.discount}
         if "sprite_info" in time_step.observation.keys():
             info["sprite_info"] = time_step.observation["sprite_info"]
+            
+        if not "image" in time_step.observation.keys():
+            obs = obs.astype(np.float)
         return obs, reward, done, info
 
     def reset(self):

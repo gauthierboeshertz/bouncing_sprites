@@ -19,7 +19,7 @@ from moog import tasks
 from moog import shapes
 from moog.state_initialization import distributions as distribs
 from moog.state_initialization import sprite_generators
-
+import copy
 
 RAW_REWARD_MULTIPLIER = 5
 TERMINATE_DISTANCE = 0.05
@@ -54,12 +54,12 @@ SPRITES_POSITIONS = gen_sprites_positions(0.2,0.2)
 random.Random(2).shuffle(SPRITES_POSITIONS)
 #SPRITES_POSITIONS = np.array(SPRITES_POSITIONS)
 #SPRITES_POSITIONS = [[0.8,0.5],[0.4,0.8],[0.5,0.5],[0.2,0.2],[0.8,0.2],[0.8,0.5]]
-
+BACKGROUND_COLOR = (0, 0, 0)
 
 
 def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,contact_reward=False,random_init_places=False,one_sprite_mover=False, all_sprite_mover=False, 
                discrete_all_sprite_mover=False, visual_obs=False,instant_move=False,action_scale=0.01,
-               add_sprite_info=False):
+               add_sprite_info=False,seed=0,dont_show_targets=False,disappear_after_contact=False):
     """Get environment config."""
 
     print("Using bouncing ball environment with {} sprites".format(num_sprites))
@@ -68,10 +68,12 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
     ############################################################################
 
     # Agent
-
+    random.seed(seed)
+    np.random.seed(seed)
     # Walls
     walls = shapes.border_walls(visible_thickness=0.05, c0=0, c1=0, c2=0)
 
+    
     # Create callable initializer returning entire state
 
     def state_initializer():
@@ -83,11 +85,12 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
         ## First create targets so other sprites cant go on them
         sprite_shape = "circle"
         for i in range(num_sprites):
+            target_color_list_i = BACKGROUND_COLOR if dont_show_targets else color_list[i] 
             target_factors = distribs.Product(
                 [distribs.Discrete('x', [TARGET_POSITIONS[i,0]]),
                 distribs.Discrete('y', [TARGET_POSITIONS[i,1]])],
-                shape="square", scale=0.03, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
-            )
+                shape="square", scale=0.06, c0=target_color_list_i[0], c1=target_color_list_i[1], c2=target_color_list_i[2])
+            
 
             target_generator= sprite_generators.generate_sprites(
                 target_factors, num_sprites=1) 
@@ -102,24 +105,14 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
 
             targets.append(target)#+ sum(targets) + sum(agents) ))
 
-
+        sprite_positions = copy.deepcopy(SPRITES_POSITIONS)
         if random_init_places:
-            """
-            agents_factors = distribs.Product(
-                    [distribs.Continuous('x', 0.1, 0.9),
-                    distribs.Continuous('y', 0.1, 0.9)],
-                    #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
-                    #distribs.Discrete('y', [target_positions[i][1]-0.1])],
-
-                    shape='circle', scale=0.08, c0=color_list[i][0], c1=color_list[i][1], c2=color_list[i][2],
-                )
-            """
-            random.shuffle(SPRITES_POSITIONS)
+            random.shuffle(sprite_positions)
 
         for i in range(num_sprites):
             agents_factors = distribs.Product(
-                    [distribs.Discrete('x', [SPRITES_POSITIONS[i][0]]),
-                        distribs.Discrete('y', [SPRITES_POSITIONS[i][1]])],
+                    [distribs.Discrete('x', [sprite_positions[i][0]]),
+                    distribs.Discrete('y', [sprite_positions[i][1]])],
                     #[distribs.Discrete('x', [target_positions[i][0]-0.1]),
                     #distribs.Discrete('y', [target_positions[i][1]-0.1])],
 
@@ -138,13 +131,8 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
 
             agents.append(agent)
 
-        state_list = [
-            ('walls', walls),
-        ]
 
-        for i in range(num_sprites):
-            state_list.append( ("target"+str(i), targets[i]))
-            state_list.append( ("agent"+str(i), agents[i]))
+        state_list = [('walls', walls)] + [('target{}'.format(i), targets[i]) for i in range(num_sprites)] + [('agent{}'.format(i), agents[i]) for i in range(num_sprites)]
 
         state = collections.OrderedDict(state_list)
 
@@ -178,16 +166,12 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
         for i in range(num_sprites):
             contact_tasks.append(tasks.OneContactReward(1/num_sprites,
             layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0))
-        
         task = tasks.SparseContactReward(*contact_tasks, timeout_steps=timeout_steps)
-
     elif contact_reward:
         for i in range(num_sprites):
             contact_tasks.append(tasks.OneContactReward(1/num_sprites,
-            layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0))
-
+            layers_0='agent'+str(i), layers_1='target'+str(i),reset_steps_after_contact =0,disappear_after_contact=disappear_after_contact))
         task = tasks.CompositeTask(*contact_tasks, timeout_steps=timeout_steps)
-
     else:
         for i in range(num_sprites):
             contact_tasks.append(tasks.L2Reward(
@@ -219,7 +203,7 @@ def get_config(num_sprites,is_demo=True,timeout_steps=1000,sparse_reward=False,c
     observer_dict = {}
     if visual_obs or is_demo:
         observer_image = observers.PILRenderer(
-            image_size=(128, 128), anti_aliasing=1, color_to_rgb=None,bg_color=(0,0,0))
+            image_size=(128, 128), anti_aliasing=1, color_to_rgb=None,bg_color=BACKGROUND_COLOR)
         observer_dict['image'] = observer_image
         
     if not visual_obs or add_sprite_info:

@@ -26,7 +26,7 @@ class MoveAllSprites(abstract_action_space.AbstractActionSpace):
     self._noise_scale = noise_scale
     self._instant_move = instant_move
     self._action_spec = specs.BoundedArray(
-        shape=(2*len(action_layers),), dtype=np.float32, minimum=0.0, maximum=1.0)
+        shape=(2*len(action_layers),), dtype=np.float32, minimum=-1.0, maximum=1.0)
 
     if not isinstance(action_layers, (list, tuple)):
         action_layers = (action_layers,)
